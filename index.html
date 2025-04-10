@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Grocery List Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary: #FFC107;
+            --text: #333;
+            --background: #f9f9f9;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+            flex: 1;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 20px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 28px;
+            color: var(--secondary);
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .intro h2 {
+            font-size: 28px;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+
+        .intro p {
+            font-size: 16px;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .chat-container {
+            background-color: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 550px;
+        }
+
+        .chat-header {
+            background-color: var(--primary);
+            padding: 15px 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-header i {
+            font-size: 20px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bot-message {
+            background-color: #E8F5E9;
+            border-bottom-left-radius: 5px;
+            align-self: flex-start;
+        }
+
+        .user-message {
+            background-color: #E3F2FD;
+            border-bottom-right-radius: 5px;
+            align-self: flex-end;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
+            background-color: #f5f5f5;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        .chat-input button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-input button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .chat-input button i {
+            font-size: 20px;
+        }
+
+        .grocery-list {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .grocery-list h3 {
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grocery-list h3 i {
+            font-size: 20px;
+            color: var(--secondary);
+        }
+
+        .list-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .list-item.completed {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .list-item input[type="checkbox"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+
+        .item-text {
+            flex: 1;
+        }
+
+        .item-category {
+            background-color: #E8F5E9;
+            color: var(--primary-dark);
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-button {
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .action-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .action-button.secondary {
+            background-color: #f5f5f5;
+            color: var(--text);
+        }
+
+        .action-button.secondary:hover {
+            background-color: #e0e0e0;
+        }
+
+        .save-button {
+            margin-left: auto;
+        }
+
+        .typing {
+            display: flex;
+            padding: 10px;
+            align-self: flex-start;
+        }
+
+        .typing-dot {
+            background-color: #888;
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+            margin: 0 2px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        .suggestions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .suggestion-chip {
+            padding: 8px 15px;
+            background-color: #f0f0f0;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #ddd;
+        }
+
+        .suggestion-chip:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .food-category {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .food-category i {
+            color: var(--primary);
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            color: #888;
+        }
+
+        .empty-state i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        @media (max-width: 768px) {
+            .logo h1 {
+                font-size: 20px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .save-button {
+                margin-left: 0;
+            }
+        }
+
+        
+        .loader {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+        }
+        .loader div {
+            display: inline-block;
+            position: absolute;
+            left: 8px;
+            width: 16px;
+            background: var(--primary);
+            animation: loader 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+        }
+        .loader div:nth-child(1) {
+            left: 8px;
+            animation-delay: -0.24s;
+        }
+        .loader div:nth-child(2) {
+            left: 32px;
+            animation-delay: -0.12s;
+        }
+        .loader div:nth-child(3) {
+            left: 56px;
+            animation-delay: 0;
+        }
+        @keyframes loader {
+            0% { top: 8px; height: 64px; }
+            50%, 100% { top: 24px; height: 32px; }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #saveConfirmation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #saveConfirmation.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-shopping-basket"></i>
+                <h1>Smart Grocery List Generator</h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <main>
+            <section class="intro">
+                <h2>AI-Powered Grocery Planning</h2>
+                <p>Tell our AI assistant what you need help with, and it will create the perfect grocery list for your meals, diet preferences, or special occasions.</p>
+            </section>
+
+            <section class="chat-container">
+                <div class="chat-header">
+                    <i class="fas fa-robot"></i>
+                    <h3>Grocery Assistant</h3>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-message">
+                        <div class="message-content">
+                            Hi there! I'm your grocery assistant. I can help you create grocery lists based on your meal plans, dietary preferences, or special occasions. What can I help you with today?
+                        </div>
+                        <div class="message-time">Just now</div>
+                    </div>
+
+                    <div class="suggestions">
+                        <div class="suggestion-chip" onclick="useSuggestion('I need a grocery list for a week of healthy meals')">Healthy meal plan for a week</div>
+                        <div class="suggestion-chip" onclick="useSuggestion('I want to make Italian food this weekend')">Italian dinner ideas</div>
+                        <div class="suggestion-chip" onclick="useSuggestion('Gluten-free grocery list')">Gluten-free options</div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="userInput" placeholder="Type your request here..." onkeypress="handleKeyPress(event)">
+                    <button id="sendButton" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </section>
+
+            <section class="grocery-list" id="groceryListSection">
+                <h3><i class="fas fa-clipboard-list"></i> Your Grocery List</h3>
+                <div id="emptyState" class="empty-state">
+                    <i class="fas fa-shopping-cart"></i>
+                    <p>Your grocery list will appear here after you chat with the assistant.</p>
+                </div>
+                <div id="groceryList" class="list-items hidden"></div>
+                <div class="action-buttons hidden" id="actionButtons">
+                    <button class="action-button" onclick="clearList()">
+                        <i class="fas fa-trash"></i> Clear List
+                    </button>
+                    <button class="action-button secondary" onclick="toggleAllItems()">
+                        <i class="fas fa-check-double"></i> Toggle All
+                    </button>
+                    <button class="action-button save-button" onclick="saveList()">
+                        <i class="fas fa-save"></i> Save List
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="saveConfirmation">List saved successfully!</div>
+
+    <script>
+       
+        const API_KEY = "AIzaSyBVOKDjEFFxJmUfKr8evpMh3YM--zzwyog";
+        let groceryItems = [];
+        let allItemsChecked = false;
+
+        // DOM Elements
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const groceryList = document.getElementById('groceryList');
+        const emptyState = document.getElementById('emptyState');
+        const actionButtons = document.getElementById('actionButtons');
+        const saveConfirmation = document.getElementById('saveConfirmation');
+
+       
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === '') return;
+
+            addMessage(message, 'user');
+            userInput.value = '';
+
+           
+            showTypingIndicator();
+
+            processWithAI(message);
+        }
+
+        
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+            
+            const messageTime = document.createElement('div');
+            messageTime.className = 'message-time';
+            messageTime.textContent = 'Just now';
+            
+            messageDiv.appendChild(messageContent);
+            messageDiv.appendChild(messageTime);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing';
+            typingDiv.id = 'typingIndicator';
+            
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'typing-dot';
+                typingDiv.appendChild(dot);
+            }
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+
+        async function processWithAI(message) {
+            try {
+                // Simulate API call (in reality you'd call the actual Gemini API)
+                // For this example, we'll simulate the response
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    
+                    // Generate AI response based on user input
+                    const response = generateAIResponse(message);
+                    
+                    // Add AI response to chat
+                    addMessage(response.message, 'bot');
+                    
+                    // Update grocery list
+                    updateGroceryList(response.items);
+                    
+                    // Show action buttons
+                    if (response.items.length > 0) {
+                        emptyState.classList.add('hidden');
+                        groceryList.classList.remove('hidden');
+                        actionButtons.classList.remove('hidden');
+                    }
+
+                    // Add suggestions after AI response if available
+                    if (response.suggestions && response.suggestions.length > 0) {
+                        addSuggestions(response.suggestions);
+                    }
+                    
+                }, 1500); // Simulate thinking time
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage("Sorry, I encountered an error. Please try again.", 'bot');
+                console.error("Error processing with AI:", error);
+            }
+        }
+
+        // Add suggestion chips
+        function addSuggestions(suggestions) {
+            const suggestionsDiv = document.createElement('div');
+            suggestionsDiv.className = 'suggestions';
+            
+            suggestions.forEach(suggestion => {
+                const chip = document.createElement('div');
+                chip.className = 'suggestion-chip';
+                chip.textContent = suggestion;
+                chip.onclick = () => useSuggestion(suggestion);
+                suggestionsDiv.appendChild(chip);
+            });
+            
+            chatMessages.appendChild(suggestionsDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Use a suggestion
+        function useSuggestion(suggestion) {
+            userInput.value = suggestion;
+            sendMessage();
+        }
+
+        // Handle Enter key press
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Update grocery list
+        function updateGroceryList(items) {
+            // Merge with existing items or replace
+            const newItems = items.filter(item => !groceryItems.some(existingItem => existingItem.name === item.name));
+            groceryItems = [...groceryItems, ...newItems];
+            
+            // Render list
+            renderGroceryList();
+        }
+
+        // Render grocery list
+        function renderGroceryList() {
+            groceryList.innerHTML = '';
+            
+            // Group items by category
+            const categorizedItems = {};
+            groceryItems.forEach(item => {
+                if (!categorizedItems[item.category]) {
+                    categorizedItems[item.category] = [];
+                }
+                categorizedItems[item.category].push(item);
+            });
+            
+            // Create list items by category
+            for (const category in categorizedItems) {
+                // Add category header
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'food-category';
+                
+                let categoryIcon = 'fas fa-apple-alt';
+                switch(category.toLowerCase()) {
+                    case 'meat': categoryIcon = 'fas fa-drumstick-bite'; break;
+                    case 'dairy': categoryIcon = 'fas fa-cheese'; break;
+                    case 'produce': categoryIcon = 'fas fa-carrot'; break;
+                    case 'bakery': categoryIcon = 'fas fa-bread-slice'; break;
+                    case 'pantry': categoryIcon = 'fas fa-box-open'; break;
+                    case 'frozen': categoryIcon = 'fas fa-snowflake'; break;
+                    case 'beverages': categoryIcon = 'fas fa-wine-bottle'; break;
+                    case 'snacks': categoryIcon = 'fas fa-cookie'; break;
+                    case 'condiments': categoryIcon = 'fas fa-pepper-hot'; break;
+                    default: categoryIcon = 'fas fa-shopping-basket';
+                }
+                
+                categoryHeader.innerHTML = `<i class="${categoryIcon}"></i> ${category}`;
+                groceryList.appendChild(categoryHeader);
+                
+                // Add items in this category
+                categorizedItems[category].forEach((item, index) => {
+                    const listItem = document.createElement('div');
+                    listItem.className = `list-item ${item.checked ? 'completed' : ''}`;
+                    listItem.id = `item-${category}-${index}`;
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = item.checked || false;
+                    checkbox.onchange = () => toggleItem(category, index);
+                    
+                    const itemText = document.createElement('span');
+                    itemText.className = 'item-text';
+                    itemText.textContent = item.name;
+                    
+                    listItem.appendChild(checkbox);
+                    listItem.appendChild(itemText);
+                    
+                    if (item.quantity) {
+                        const quantity = document.createElement('span');
+                        quantity.className = 'item-category';
+                        quantity.textContent = item.quantity;
+                        listItem.appendChild(quantity);
+                    }
+                    
+                    groceryList.appendChild(listItem);
+                });
+            }
+        }
+
+        // Toggle item checked state
+        function toggleItem(category, index) {
+            // Find the item
+            const categoryItems = groceryItems.filter(item => item.category === category);
+            const item = categoryItems[index];
+            
+            if (item) {
+                item.checked = !item.checked;
+                const listItem = document.getElementById(`item-${category}-${index}`);
+                
+                if (listItem) {
+                    if (item.checked) {
+                        listItem.classList.add('completed');
+                    } else {
+                        listItem.classList.remove('completed');
+                    }
+                }
+            }
+        }
+
+        // Toggle all items
+        function toggleAllItems() {
+            allItemsChecked = !allItemsChecked;
+            groceryItems.forEach(item => {
+                item.checked = allItemsChecked;
+            });
+            renderGroceryList();
+        }
+
+        // Clear grocery list
+        function clearList() {
+            groceryItems = [];
+            groceryList.innerHTML = '';
+            groceryList.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            actionButtons.classList.add('hidden');
+        }
+
+        // Save grocery list
+        function saveList() {
+            // In a real app, this would save to local storage, a database, or allow download
+            // For this example, we'll just show a confirmation
+            showSaveConfirmation();
+            
+            // You could implement actual saving logic here
+            const listData = JSON.stringify(groceryItems);
+            localStorage.setItem('savedGroceryList', listData);
+        }
+
+        // Show save confirmation
+        function showSaveConfirmation() {
+            saveConfirmation.classList.add('show');
+            setTimeout(() => {
+                saveConfirmation.classList.remove('show');
+            }, 3000);
+        }
+
+        // Generate AI response (simulated for this example)
+        function generateAIResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            // Simple logic to generate responses based on user input
+            if (message.includes('healthy') || message.includes('diet')) {
+                return {
+                    message: "Here's a healthy grocery list I've created for you. It includes lots of fresh produce, lean proteins, and whole grains!",
+                    items: [
+                        { name: "Spinach", category: "Produce", quantity: "1 bag" },
+                        { name: "Kale", category: "Produce", quantity: "1 bunch" },
+                        { name: "Bell Peppers", category: "Produce", quantity: "3" },
+                        { name: "Tomatoes", category: "Produce", quantity: "4" },
+                        { name: "Avocados", category: "Produce", quantity: "2" },
+                        { name: "Chicken Breast", category: "Meat", quantity: "1 lb" },
+                        { name: "Salmon", category: "Meat", quantity: "1 lb" },
+                        { name: "Greek Yogurt", category: "Dairy", quantity: "1 tub" },
+                        { name: "Almond Milk", category: "Dairy", quantity: "1 carton" },
+                        { name: "Quinoa", category: "Pantry", quantity: "1 bag" },
+                        { name: "Brown Rice", category: "Pantry", quantity: "1 bag" },
+                        { name: "Chia Seeds", category: "Pantry", quantity: "1 bag" },
+                    ],
+                    suggestions: ["What meals can I make with these?", "I'm vegetarian, adjust this list", "Add more protein options"]
+                };
+            } else if (message.includes('italian') || message.includes('pasta')) {
+                return {
+                    message: "I've put together an Italian-inspired grocery list for you. Perfect for making delicious pasta dishes and more!",
+                    items: [
+                        { name: "Spaghetti", category: "Pantry", quantity: "1 box" },
+                        { name: "Penne", category: "Pantry", quantity: "1 box" },
+                        { name: "Olive Oil", category: "Pantry", quantity: "1 bottle" },
+                        { name: "Canned Tomatoes", category: "Pantry", quantity: "2 cans" },
+                        { name: "Garlic", category: "Produce", quantity: "1 head" },
+                        { name: "Onions", category: "Produce", quantity: "2" },
+                        { name: "Fresh Basil", category: "Produce", quantity: "1 bunch" },
+                        { name: "Parmesan Cheese", category: "Dairy", quantity: "1 wedge" },
+                        { name: "Mozzarella", category: "Dairy", quantity: "1 ball" },
+                        { name: "Ground Beef", category: "Meat", quantity: "1 lb" },
+                        { name: "Italian Sausage", category: "Meat", quantity: "4 links" },
+                        { name: "Red Wine", category: "Beverages", quantity: "1 bottle" },
+                    ],
+                    suggestions: ["Add ingredients for tiramisu", "Make it vegetarian", "I need appetizer ideas too"]
+                };
+            } else if (message.includes('gluten') || message.includes('gluten-free')) {
+                return {
+                    message: "Here's a gluten-free grocery list for you. All items are safe for a gluten-free diet!",
+                    items: [
+                        { name: "Gluten-free Bread", category: "Bakery", quantity: "1 loaf" },
+                        { name: "Gluten-free Pasta", category: "Pantry", quantity: "1 box" },
+                        { name: "Rice", category: "Pantry", quantity: "1 bag" },
+                        { name: "Quinoa", category: "Pantry", quantity: "1 bag" },
+                        { name: "Gluten-free Flour", category: "Pantry", quantity: "1 bag" },
+                        { name: "Corn Tortillas", category: "Bakery", quantity: "1 pack" },
+                        { name: "Chicken Breast", category: "Meat", quantity: "1 lb" },
+                        { name: "Eggs", category: "Dairy", quantity: "1 dozen" },
+                        { name: "Almond Milk", category: "Dairy", quantity: "1 carton" },
+                        { name: "Sweet Potatoes", category: "Produce", quantity: "3" },
+                        { name: "Zucchini", category: "Produce", quantity: "2" },
+                        { name: "Gluten-free Soy Sauce", category: "Condiments", quantity: "1 bottle" },
+                    ],
+                    suggestions: ["Add gluten-free snacks", "Gluten-free dessert options", "Are oats gluten-free?"]
+                };
+            } else if (message.includes('bbq') || message.includes('barbecue') || message.includes('grill')) {
+                return {
+                    message: "I've created a grocery list for a great BBQ! These items will help you host an amazing cookout.",
+                    items: [
+                        { name: "Hamburger Patties", category: "Meat", quantity: "8" },
+                        { name: "Hot Dogs", category: "Meat", quantity: "1 pack" },
+                        { name: "Chicken Thighs", category: "Meat", quantity: "1 lb" },
+                        { name: "BBQ Sauce", category: "Condiments", quantity: "1 bottle" },
+                        { name: "Hamburger Buns", category: "Bakery", quantity: "1 pack" },
+                        { name: "Hot Dog Buns", category: "Bakery", quantity: "1 pack" },
+                        { name: "Lettuce", category: "Produce", quantity: "1 head" },
+                        { name: "Tomatoes", category: "Produce", quantity: "3" },
+                        { name: "Onions", category: "Produce", quantity: "2" },
+                        { name: "Potato Chips", category: "Snacks", quantity: "2 bags" },
+                        { name: "Corn on the Cob", category: "Produce", quantity: "6 ears" },
+                        { name: "Watermelon", category: "Produce", quantity: "1" },
+                        { name: "Beer", category: "Beverages", quantity: "1 pack" },
+                    ],
+                    suggestions: ["Add vegetarian grill options", "I need dessert ideas too", "What condiments should I get?"]
+                };
+            } else if (message.includes('vegan') || message.includes('plant')) {
+                return {
+                    message: "Here's a vegan grocery list for you with plenty of plant-based options!",
+                    items: [
+                        { name: "Tofu", category: "Produce", quantity: "1 block" },
+                        { name: "Tempeh", category: "Produce", quantity: "1 block" },
+                        { name: "Black Beans", category: "Pantry", quantity: "2 cans" },
+                        { name: "Chickpeas", category: "Pantry", quantity: "2 cans" },
+                        { name: "Quinoa", category: "Pantry", quantity: "1 bag" },
+                        { name: "Nutritional Yeast", category: "Pantry", quantity: "1 container" },
+                        { name: "Almond Milk", category: "Dairy", quantity: "1 carton" },
+                        { name: "Vegan Cheese", category: "Dairy", quantity: "1 pack" },
+                        { name: "Spinach", category: "Produce", quantity: "1 bag" },
+                        { name: "Sweet Potatoes", category: "Produce", quantity: "3" },
+                        { name: "Avocados", category: "Produce", quantity: "2" },
+                        { name: "Cashews", category: "Snacks", quantity: "1 bag" },
+                    ],
+                    suggestions: ["Vegan meal prep ideas", "Add vegan desserts", "What vegan protein sources do you recommend?"]
+                };
+            } else {
+                // Default response
+                return {
+                    message: "I've created a general grocery list based on your request. Feel free to ask me to customize it further!",
+                    items: [
+                        { name: "Bread", category: "Bakery", quantity: "1 loaf" },
+                        { name: "Milk", category: "Dairy", quantity: "1 gallon" },
+                        { name: "Eggs", category: "Dairy", quantity: "1 dozen" },
+                        { name: "Chicken", category: "Meat", quantity: "1 lb" },
+                        { name: "Ground Beef", category: "Meat", quantity: "1 lb" },
+                        { name: "Apples", category: "Produce", quantity: "5" },
+                        { name: "Bananas", category: "Produce", quantity: "1 bunch" },
+                        { name: "Potatoes", category: "Produce", quantity: "5 lb bag" },
+                        { name: "Pasta", category: "Pantry", quantity: "1 box" },
+                        { name: "Rice", category: "Pantry", quantity: "1 bag" },
+                        { name: "Cereal", category: "Pantry", quantity: "1 box" },
+                        { name: "Coffee", category: "Beverages", quantity: "1 bag" },
+                    ],
+                    suggestions: ["I need ingredients for dinner tonight", "Add more snacks", "What about cleaning supplies?"]
+                };
+            }
+        }
+
+        // Function to simulate an actual API call to Gemini API (for future implementation)
+        async function callGeminiAPI(prompt) {
+            try {
+                // This is where you would make the actual API call to Gemini with your API key
+                // const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //         'Authorization': `Bearer ${API_KEY}`
+                //     },
+                //     body: JSON.stringify({
+                //         contents: [{
+                //             parts: [{
+                //                 text: prompt
+                //             }]
+                //         }]
+                //     })
+                // });
+                
+                // const data = await response.json();
+                // return data;
+                
+                // For now, we'll return a simulated response
+                return {
+                    message: "This is a simulated response.",
+                    items: []
+                };
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                throw error;
+            }
+        }
+
+        // Initialize with pre-loaded suggestions
+        document.addEventListener('DOMContentLoaded', function() {
+            // You could load a saved list from localStorage here
+            const savedList = localStorage.getItem('savedGroceryList');
+            if (savedList) {
+                try {
+                    groceryItems = JSON.parse(savedList);
+                    if (groceryItems.length > 0) {
+                        emptyState.classList.add('hidden');
+                        groceryList.classList.remove('hidden');
+                        actionButtons.classList.remove('hidden');
+                        renderGroceryList();
+                    }
+                } catch (e) {
+                    console.error("Error loading saved grocery list:", e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
